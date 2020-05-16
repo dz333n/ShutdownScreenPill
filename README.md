@@ -1,0 +1,2 @@
+# Shutdown Screen Pill
+This program enables or disables "It's not safe to shutdown your computer" screen. You can do the same on Windows 2000, but minimal required OS is Windows XP. Also it works on Windows 10.
