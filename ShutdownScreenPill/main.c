@@ -130,8 +130,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
                 {
                     result = ShutdownSystem();
                     CheckAndNotifyError(result);
-                    if (result == ERROR_SUCCESS)
-                        MessageBox(NULL, L"Called ExitWindowsEx with EWX_SHUTDOWN.", L"Shutting down!", MB_OK);
                 }
             }
         }
