@@ -77,6 +77,17 @@ LRESULT ShutdownSystem()
         | SHTDN_REASON_FLAG_PLANNED) == FALSE ? ERROR_SUCCESS : GetLastError();
 }
 
+void CheckAndNotifyError(LRESULT result)
+{
+    if (result != ERROR_SUCCESS)
+    {
+        wchar_t buf[128] = { 0 };
+        wsprintfW(buf, L"Error - %d.", result);
+        if (result == 5) wsprintfW(buf, L"%s\nAccess denid.", buf);
+        MessageBox(NULL, buf, L"Shutdown Screen Pill", MB_OK);
+    }
+}
+
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
 {
     LPWSTR* szArglist;
@@ -86,21 +97,77 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
     szArglist = CommandLineToArgvW(GetCommandLineW(), &nArgs);
     if (!szArglist || nArgs <= 1)
     {
-        MessageBox(NULL, L"Command line arguments:\n/enable - Enable registry value\n/shutdown - Shutdown system in a required way\n/disable - Disable registry value\n\nExample:\nShutdownScreenPill /enable /shutdown\n\nSource code at:\nhttps://github.com/Win32Tricks/ShutdownScreenPill\n(C) Yaroslav Kibysh 2020", L"Shutdown Screen Pill", 0);
+        int interactiveResult = MessageBox(NULL,
+            L"This tool enables/invokes/disables \"It's now safe to shutdown\" screen.\n"
+            L"Use /help argument to see other available commands.\n"
+            L"(C) Yarolav Kibysh 2020, source code link in /help\n\n"
+            L"Interactive mode\n"
+            L"We are about to modify \"DontPowerOffAfterShutdown\" value in \"HKLM\\Software\\Policies\\Microsoft\\Windows NT\"\n"
+            L"Yes = Enable shutdown screen\n"
+            L"No = Disable shutdown screen\n"
+            L"Cancel = Exit",
+            L"Shutdown Screen Pill", MB_YESNOCANCEL);
+
+        if (interactiveResult == IDYES)
+        {
+            result = EnablePill();
+            CheckAndNotifyError(result);
+            if (result == ERROR_SUCCESS)
+            {
+                int shutdownAns = MessageBox(NULL,
+                    L"Shutdown screen enabled!\n"
+                    L"Would you like to shutdown your computer to see that screen?\n\n"
+                    L"There are two different methods of shutdown for ExitWindowEx function - "
+                    L"EWX_POWEROFF and EWX_SHUTDOWN. The first one is supposed to switch the "
+                    L"power off after shutdown, and the second one is supposed to only shutdown "
+                    L"the system like it was in NT <= 4.0. But in Microsoft patched EWX_SHUTDOWN "
+                    L"since Windows XP SP1 (?), so now it does the same as EWX_POWEROFF. "
+                    L"Registry value returns old behaviour of this function, but your system "
+                    L"may not call it via default shutdown, so let's use our shutdown function!",
+                    L"Shutdown Screen Pill", MB_YESNO);
+
+                if (shutdownAns == IDYES)
+                {
+                    result = ShutdownSystem();
+                    CheckAndNotifyError(result);
+                    if (result == ERROR_SUCCESS)
+                        MessageBox(NULL, L"Called ExitWindowsEx with EWX_SHUTDOWN.", L"Shutting down!", MB_OK);
+                }
+            }
+        }
+        else if (interactiveResult == IDNO) 
+        {
+            result = DisablePill();
+            CheckAndNotifyError(result);
+            if (result == ERROR_SUCCESS)
+                MessageBox(NULL, L"Shutdown screen disabled.", L"Shutdown Screen Pill", MB_OK);
+        }
     }
     else 
     {
-        if (ThereIsArgument(nArgs, szArglist, L"/enable")) result = EnablePill();
-        if (ThereIsArgument(nArgs, szArglist, L"/shutdown")) result = ShutdownSystem();
-        if (ThereIsArgument(nArgs, szArglist, L"/disable")) result = DisablePill();
-    }
+        if (ThereIsArgument(nArgs, szArglist, L"/help"))
+            MessageBox(NULL,
+                L"Command line arguments:\n" 
+                L"/enable - Enable registry value\n" 
+                L"/shutdown - Shutdown system in a required way\n" 
+                L"/disable - Disable registry value\n\n" 
+                L"Admin permissions are required for /enable /disable\n"
+                L"You may combine arguments: /enable /shutdown\n\n"
+                L"Source code at:\n"
+                L"https://github.com/Win32Tricks/ShutdownScreenPill\n"
+                L"(C) Yaroslav Kibysh 2020", L"Shutdown Screen Pill", 0);
 
-    if (result != ERROR_SUCCESS)
-    {
-        wchar_t buf[128] = { 0 };
-        wsprintfW(buf, L"Error - %d.", result);
-        if (result == 5) wsprintfW(buf, L"%s\nAccess denid.", buf);
-        MessageBox(NULL, buf, L"Shutdown Screen Pill.", 0);
+        if (ThereIsArgument(nArgs, szArglist, L"/enable")) result = EnablePill();
+        CheckAndNotifyError(result);
+        if (result != ERROR_SUCCESS) return 0;
+
+        if (ThereIsArgument(nArgs, szArglist, L"/shutdown")) result = ShutdownSystem();
+        CheckAndNotifyError(result);
+        if (result != ERROR_SUCCESS) return 0;
+
+        if (ThereIsArgument(nArgs, szArglist, L"/disable")) result = DisablePill();
+        CheckAndNotifyError(result);
+        if (result != ERROR_SUCCESS) return 0;
     }
 
     LocalFree(szArglist);
