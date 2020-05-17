@@ -25,7 +25,7 @@ LRESULT SetPillKeyValue(DWORD value)
     LRESULT result = GetPillHkey(&hkey);
     if (result != ERROR_SUCCESS) return result;
 
-    result = RegSetKeyValue(hkey, NULL, L"DontPowerOffAfterShutdown", REG_DWORD, (BYTE*)&value, sizeof(value));
+    result = RegSetValueEx(hkey, L"DontPowerOffAfterShutdown", 0, REG_DWORD, (BYTE*)&value, sizeof(value));
 
     RegCloseKey(hkey);
 
