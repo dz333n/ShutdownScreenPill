@@ -154,7 +154,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
                 L"Admin permissions are required for /enable /disable\n"
                 L"You may combine arguments: /enable /shutdown\n\n"
                 L"Source code at:\n"
-                L"https://github.com/Win32Tricks/ShutdownScreenPill\n"
+                L"https://github.com/feel-the-dz3n/ShutdownScreenPill\n"
                 L"(C) Yaroslav Kibysh 2020", L"Shutdown Screen Pill", 0);
 
         if (ThereIsArgument(nArgs, szArglist, L"/enable")) result = EnablePill();
