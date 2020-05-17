@@ -13,7 +13,7 @@ BOOL ThereIsArgument(int argc, _TCHAR* argv[], _TCHAR* arg)
 
 LRESULT GetPillHkey(PHKEY hkey)
 {
-    return RegOpenKey(
+    return RegCreateKey(
         HKEY_LOCAL_MACHINE,
         L"Software\\Policies\\Microsoft\\Windows NT",
         hkey);
