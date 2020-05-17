@@ -99,6 +99,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
     {
         int interactiveResult = MessageBox(NULL,
             L"This tool enables/invokes/disables \"It's now safe to shutdown\" screen.\n"
+            L"Windows Server 2003+"
             L"Use /help argument to see other available commands.\n"
             L"(C) Yarolav Kibysh 2020, source code link in /help\n\n"
             L"Interactive mode\n"
@@ -122,7 +123,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLin
                     L"power off after shutdown, and the second one is supposed to only shutdown "
                     L"the system like it was in NT <= 4.0. But in Microsoft patched EWX_SHUTDOWN "
                     L"since Windows XP SP1 (?), so now it does the same as EWX_POWEROFF. "
-                    L"Registry value returns old behaviour of this function, but your system "
+                    L"Then Microsoft made a patch for Server 2003, so the registry value "
+                    L"returns old behaviour of this function, but your system "
                     L"may not call it via default shutdown, so let's use our shutdown function!",
                     L"Shutdown Screen Pill", MB_YESNO);
 
